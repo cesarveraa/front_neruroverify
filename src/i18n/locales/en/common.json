@@ -1,0 +1,29 @@
+{
+  "navigation": {
+    "dashboard": "Dashboard",
+    "profile": "Profile",
+    "datasets": "Data sets",
+    "logout": "Logout"
+  },
+  "theme": {
+    "light": "Light",
+    "dark": "Dark",
+    "system": "System",
+    "toggle": "Toggle theme"
+  },
+  "language": {
+    "english": "English",
+    "spanish": "Spanish",
+    "select": "Select language"
+  },
+  "loading": "Loading...",
+  "error": "Error",
+  "success": "Success",
+  "cancel": "Cancel",
+  "save": "Save",
+  "edit": "Edit",
+  "delete": "Delete",
+  "signIn": "Sign in",
+  "signUp": "Sign up",
+  "confirm": "Confirm"
+}

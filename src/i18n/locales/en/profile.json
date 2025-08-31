@@ -1,0 +1,12 @@
+{
+  "title": "Profile Settings",
+  "subtitle": "Manage your account information and preferences",
+  "form": {
+    "email": "Email Address",
+    "displayName": "Display Name",
+    "photoURL": "Profile Picture URL",
+    "save": "Save Changes"
+  },
+  "success": "Profile updated successfully!",
+  "error": "Failed to update profile. Please try again."
+}

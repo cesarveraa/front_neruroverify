@@ -1,0 +1,29 @@
+{
+  "navigation": {
+    "dashboard": "Panel",
+    "profile": "Perfil",
+    "datasets": "Data sets",
+    "logout": "Cerrar sesión"
+  },
+  "theme": {
+    "light": "Claro",
+    "dark": "Oscuro",
+    "system": "Sistema",
+    "toggle": "Cambiar tema"
+  },
+  "language": {
+    "english": "Inglés",
+    "spanish": "Español",
+    "select": "Seleccionar idioma"
+  },
+  "loading": "Cargando...",
+  "error": "Error",
+  "success": "Éxito",
+  "cancel": "Cancelar",
+  "save": "Guardar",
+  "edit": "Editar",
+  "delete": "Eliminar",
+  "confirm": "Confirmar",
+  "signIn": "Iniciar sesión",
+  "signUp": "Crear cuenta"
+}

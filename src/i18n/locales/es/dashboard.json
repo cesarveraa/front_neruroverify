@@ -1,0 +1,53 @@
+{
+  "welcome": "¡Bienvenido, {{name}}!",
+  "subtitle": "Observa cómo cambian atención, estrés y relajación frente a contenido real vs falso.",
+  "description": "Ejecuta sesiones en vivo con tu EEG o simula con datasets compartidos. Compara respuestas ante desinformación y genera reportes.",
+  "getStarted": "Comenzar",
+
+  "stats": {
+    "sessions": "Sesiones",
+    "sessionsChange": "+1 esta semana",
+    "avgAttention": "Atención prom. (0–1)",
+    "avgAttentionChange": "+0.04 vs semana pasada",
+    "stressPeaks": "Picos de estrés",
+    "stressPeaksChange": "-3 vs última sesión",
+    "fakeVsReal": "Exposición Falso / Real",
+    "fakeVsRealChange": "Últimas 24h"
+  },
+
+  "quickActions": {
+    "title": "Acciones rápidas",
+    "datasets": "Datasets",
+    "datasetsDesc": "Explora/sube datasets EEG o de medios",
+    "newSession": "Nueva sesión en vivo",
+    "newSessionDesc": "Conecta el EEG e inicia exposición",
+    "uploadEEG": "Subir archivo EEG",
+    "uploadEEGDesc": "CSV/EDF para simular respuestas",
+    "viewReports": "Reportes",
+    "viewReportsDesc": "Compara impacto de Falso vs Real"
+  },
+
+  "recentActivity": {
+    "title": "Actividad reciente",
+    "subtitle": "Tus últimas sesiones, cargas y comparaciones",
+    "timeAgo": "hace {{time}}",
+    "noActivity": "Aún no hay actividad."
+  },
+
+  "activity": {
+    "sessionCompleted": "Sesión completada: Conjunto A",
+    "datasetUploaded": "Dataset subido: demo_eeg_session.csv",
+    "modelCompared": "Comparación atención vs estrés (2 conjuntos)"
+  },
+
+  "gettingStarted": {
+    "title": "Primeros pasos",
+    "subtitle": "Completa estos pasos para usar el Challenge",
+    "account": "Cuenta creada",
+    "chooseDataset": "Elige o sube un dataset",
+    "runSession": "Corre una sesión en vivo o simulada",
+    "compare": "Compara resultados Falso vs Real"
+  },
+
+  "continueSetup": "Continuar configuración"
+}

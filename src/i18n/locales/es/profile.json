@@ -1,0 +1,12 @@
+{
+  "title": "Configuración del Perfil",
+  "subtitle": "Administra la información y preferencias de tu cuenta",
+  "form": {
+    "email": "Dirección de Correo",
+    "displayName": "Nombre para Mostrar",
+    "photoURL": "URL de Foto de Perfil",
+    "save": "Guardar Cambios"
+  },
+  "success": "¡Perfil actualizado exitosamente!",
+  "error": "Error al actualizar el perfil. Por favor intenta de nuevo."
+}

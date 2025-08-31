@@ -1,0 +1,86 @@
+{
+  "title": "EEG / Fake News Datasets",
+  "subtitle": "Upload EEG signals or labeled results (CSV/JSON), map columns, validate, and save to analyze them in dashboard/analytics.",
+
+  "actions": {
+    "uploadTitle": "Upload file",
+    "uploadDesc": "CSV or JSON with header",
+    "selectFile": "Select file",
+    "dropHint": "Drag & drop your file here",
+    "demosTitle": "Load demos",
+    "demosDesc": "Synthetic data for testing",
+    "demoA": "DEMO_A (standard headers)",
+    "demoB": "DEMO_B (varied headers)",
+    "analyticsTitle": "Go to Analytics",
+    "analyticsDesc": "Explore metrics, cohorts, and sessions",
+    "openAnalytics": "Open Analytics"
+  },
+
+  "badges": {
+    "attention": "attention/relax",
+    "stress": "stress",
+    "bands": "bands"
+  },
+
+  "current": {
+    "title": "Configure Dataset",
+    "desc": "{{name}} · {{rows}} rows · {{cols}} columns",
+    "cancel": "Cancel",
+    "save": "Save dataset"
+  },
+
+  "mapper": {
+    "hint": "Map your columns. \"time\" and \"label\" are required; at least one metric/band must be mapped.",
+    "unassigned": "— unassigned —",
+    "fields": {
+      "time": "time",
+      "label": "label",
+      "source": "source",
+      "attention": "attention",
+      "stress": "stress",
+      "relax": "relax",
+      "delta": "delta",
+      "theta": "theta",
+      "alpha": "alpha",
+      "beta": "beta",
+      "gamma": "gamma"
+    }
+  },
+
+  "validation": {
+    "ok": "Mapping is valid. You can save the dataset.",
+    "problemsTitle": "Please review the following issues:",
+    "missingCore": "Missing required column: {{field}}",
+    "needOneMetric": "You must map at least one signal/metric (attention/stress/relax/delta/theta/alpha/beta/gamma).",
+    "missingHeader": "Mapped column not found in data: {{field}} → \"{{value}}\""
+  },
+
+  "preview": {
+    "showing": "Showing {{shown}} of {{total}} rows."
+  },
+
+  "list": {
+    "searchPlaceholder": "Search by name…",
+    "clearSearch": "Clear",
+    "savedTitle": "Saved datasets",
+    "none": "No saved datasets{{query, select, '' {} other { for “{{query}}”}}}."
+  },
+
+  "card": {
+    "createdAt": "{{date}}",
+    "rows": "{{rows}} rows",
+    "source_demo": "demo",
+    "source_upload": "upload",
+    "analyze": "Analyze",
+    "delete": "Delete"
+  },
+
+  "errors": {
+    "parseFailed": "Could not parse the file. Please check CSV/JSON format."
+  },
+
+  "legacy": {
+    "createPage": "Create Page",
+    "learnMore": "Learn More"
+  }
+}

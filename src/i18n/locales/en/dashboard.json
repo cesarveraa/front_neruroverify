@@ -1,0 +1,53 @@
+{
+  "welcome": "Welcome, {{name}}",
+  "subtitle": "Track how attention, stress and relaxation change when facing real vs fake content.",
+  "description": "Run live sessions with your EEG device or simulate with shared datasets. Compare responses to misinformation and generate reports.",
+  "getStarted": "Get started",
+
+  "stats": {
+    "sessions": "Sessions",
+    "sessionsChange": "+1 this week",
+    "avgAttention": "Avg. Attention (0–1)",
+    "avgAttentionChange": "+0.04 vs last week",
+    "stressPeaks": "Stress Peaks",
+    "stressPeaksChange": "-3 vs last session",
+    "fakeVsReal": "Fake / Real Exposure",
+    "fakeVsRealChange": "Last 24h"
+  },
+
+  "quickActions": {
+    "title": "Quick actions",
+    "datasets": "Datasets",
+    "datasetsDesc": "Browse/upload EEG or media datasets",
+    "newSession": "New live session",
+    "newSessionDesc": "Connect EEG and start an exposure run",
+    "uploadEEG": "Upload EEG file",
+    "uploadEEGDesc": "CSV/EDF to simulate responses",
+    "viewReports": "Reports",
+    "viewReportsDesc": "Compare fake vs real impact"
+  },
+
+  "recentActivity": {
+    "title": "Recent activity",
+    "subtitle": "Your latest sessions, uploads and comparisons",
+    "timeAgo": "{{time}} ago",
+    "noActivity": "No activity yet."
+  },
+
+  "activity": {
+    "sessionCompleted": "Completed session: Exposure Set A",
+    "datasetUploaded": "Uploaded dataset: demo_eeg_session.csv",
+    "modelCompared": "Compared attention vs stress across 2 sets"
+  },
+
+  "gettingStarted": {
+    "title": "Getting started",
+    "subtitle": "Complete these steps to use the Challenge",
+    "account": "Account created",
+    "chooseDataset": "Choose or upload a dataset",
+    "runSession": "Run a live or simulated session",
+    "compare": "Compare Fake vs Real outcomes"
+  },
+
+  "continueSetup": "Continue setup"
+}
