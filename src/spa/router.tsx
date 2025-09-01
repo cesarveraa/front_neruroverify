@@ -17,7 +17,13 @@ import { AppLayout } from "../widgets/layout/app-layout"
 import { ErrorBoundary } from "../shared/ui/error-boundary"
 import LabPage from "./pages/lab/lab"
 
+// NUEVOS imports
+import EvaluatorDashboard from "./pages/evaluator/EvaluatorDashboard"
+import EvaluatedScreen from "../spa/pages/evaluator/EvaluatedScreen"
+import Callback from "./pages/auth/Callback"
+
 export const routes: RouteObject[] = [
+  // Público: login
   {
     path: "/login",
     element: (
@@ -26,6 +32,18 @@ export const routes: RouteObject[] = [
       </ErrorBoundary>
     ),
   },
+
+  // Público: callback de autenticación (redirección post-login)
+  {
+    path: "/callback",
+    element: (
+      <ErrorBoundary>
+        <Callback />
+      </ErrorBoundary>
+    ),
+  },
+
+  // Protegido: todo lo demás detrás del gate
   {
     path: "/",
     element: (
@@ -38,9 +56,8 @@ export const routes: RouteObject[] = [
         path: "/",
         element: <AppLayout />,
         children: [
-          // Redirección "/" -> "/dashboard" (opción A: manejarlo en ProtectedRoute con useEffect + navigate)
-          // Opción B (si prefieres <Navigate/>):
-          // { index: true, element: <Navigate to="dashboard" replace /> },
+          // Opción A: manejar redirección "/" -> "/dashboard" en ProtectedRoute
+          // Opción B: si prefieres Navigate, puedes añadir un index route aquí
 
           { path: "dashboard", element: <DashboardPage /> },
           { path: "profile", element: <ProfilePage /> },
@@ -49,9 +66,15 @@ export const routes: RouteObject[] = [
           { path: "verticals/legal", element: <LegalPage /> },
           { path: "verticals/restaurant", element: <RestaurantPage /> },
           { path: "lab", element: <LabPage /> },
+
+          // NUEVAS rutas protegidas para el “evaluator”
+          { path: "evaluator/dashboard", element: <EvaluatorDashboard /> },
+          { path: "evaluator/session", element: <EvaluatedScreen /> },
         ],
       },
     ],
   },
+
+  // 404
   { path: "*", element: <NotFoundPage /> },
 ]
