@@ -6,8 +6,6 @@ import { useSearchParams } from "react-router-dom";
 import { Button } from "../../shared/ui/button";
 import { Badge } from "../../shared/ui/badge";
 import { Maximize2, RefreshCcw } from "lucide-react";
-
-// Usa el mismo cliente que en Lab
 import { generateNews } from "../../shared/lib/eegservice";
 
 export default function EvaluatedScreen() {
@@ -25,7 +23,7 @@ export default function EvaluatedScreen() {
     return { step, total, pct };
   }, [step, total]);
 
-  // 1) query ?text=..., 2) sessionStorage.stimulus_text, 3) pedir al backend
+  // 1) ?text=..., 2) sessionStorage, 3) pedir al backend
   useEffect(() => {
     const fromQuery = params.get("text");
     if (fromQuery && fromQuery.trim()) {
@@ -50,8 +48,8 @@ export default function EvaluatedScreen() {
       const t = (data.noticia || "").trim();
       setText(t);
       sessionStorage.setItem("stimulus_text", t);
-    } catch (e) {
-      setText("No se pudo obtener el estímulo. Verifica el backend (/nlp/generar_noticia).");
+    } catch {
+      setText("");
     } finally {
       setLoading(false);
     }
@@ -64,7 +62,7 @@ export default function EvaluatedScreen() {
 
   return (
     <main className="min-h-screen bg-background text-foreground">
-      {/* Barra superior discreta */}
+      {/* Top bar */}
       <div className="sticky top-0 z-10 border-b bg-background/80 backdrop-blur">
         <div className="max-w-5xl mx-auto px-4 py-3 flex items-center justify-between">
           <div className="flex items-center gap-3">
@@ -73,7 +71,9 @@ export default function EvaluatedScreen() {
               Please focus on the content. Progress will be indicated.
             </span>
             {progress && (
-              <Badge variant="secondary" className="ml-2">{progress.step} / {progress.total}</Badge>
+              <Badge variant="secondary" className="ml-2">
+                {progress.step} / {progress.total}
+              </Badge>
             )}
           </div>
 
@@ -90,10 +90,7 @@ export default function EvaluatedScreen() {
 
         {progress && (
           <div className="h-1 w-full bg-muted">
-            <div
-              className="h-full bg-primary transition-all"
-              style={{ width: `${progress.pct}%` }}
-            />
+            <div className="h-full bg-primary transition-all" style={{ width: `${progress.pct}%` }} />
           </div>
         )}
       </div>
@@ -101,7 +98,7 @@ export default function EvaluatedScreen() {
       {/* Contenido */}
       <div className="max-w-5xl mx-auto px-4 py-8 md:py-12">
         <div className="rounded-3xl border bg-card shadow-sm p-5 md:p-8">
-          {/* Área de estímulo */}
+          {/* Área del estímulo */}
           <div className="rounded-2xl bg-muted/40 border p-6 md:p-10 min-h-[50vh] grid">
             <article className="prose prose-lg md:prose-xl max-w-none text-foreground/95 dark:prose-invert place-self-center">
               {loading ? (
@@ -111,16 +108,20 @@ export default function EvaluatedScreen() {
               ) : (
                 <div className="text-muted-foreground text-center">
                   <p className="mb-3">No hay texto de estímulo todavía.</p>
-                  <p className="text-sm">
-                    Pasa <code>?text=</code> en la URL, guarda en <code>sessionStorage.setItem("stimulus_text", "...")</code>,
-                    o usa el botón <b>Regenerar</b> para pedirlo al backend.
+                  <p className="text-sm mb-2">
+                    Pasa <code>?text=</code> en la URL, guarda en{" "}
+                    <code>sessionStorage.setItem("stimulus_text", "...")</code>,
+                    o usa el botón <b>Regenerar</b> (usa tu backend /nlp/generar_noticia).
+                  </p>
+                  <p className="italic text-xs">
+                    Ejemplo: “¡Descubren llamas voladoras en La Paz durante un desfile de Alasitas!”
                   </p>
                 </div>
               )}
             </article>
           </div>
 
-          {/* Opcional: selector de modelo visible solo si quieres control manual */}
+          {/* Selector de modelo (opcional) */}
           <div className="mt-4 flex items-center gap-3">
             <label className="text-xs text-muted-foreground">Modelo</label>
             <input
