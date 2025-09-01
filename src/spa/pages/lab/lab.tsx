@@ -8,6 +8,8 @@ import {
   generateNews,
   classifyNews,
   computeEegFeatures,
+  getLatest,         // <-- NUEVO
+  getHistory,        // <-- NUEVO (opcional: botón de historial)
   type ClassifyMode,
   type EegFeaturesResp,
 } from "../../../shared/lib/eegservice";
@@ -33,6 +35,7 @@ import {
   Maximize2,
   X,
   ChevronRight,
+  History as HistoryIcon,
 } from "lucide-react";
 
 import {
@@ -72,11 +75,14 @@ export const LabPage: React.FC = () => {
   const [clsLoading, setClsLoading] = useState(false);
   const [cls, setCls] = useState<{ label: "fake" | "real"; score: number } | null>(null);
 
-  // EEG — streaming (sim)
+  // EEG — streaming (sim / server-bridge)
   const [sr, setSr] = useState(256); // sample_rate
   const [nSamples, setNSamples] = useState(512);
   const [simOn, setSimOn] = useState(false);
   const simId = useRef<number | null>(null);
+
+  const [dataSource, setDataSource] = useState<"front-sim" | "server-bridge">("front-sim"); // <-- NUEVO
+  const [sessionId, setSessionId] = useState("demo1");                                      // <-- NUEVO
 
   const [engSeries, setEngSeries] = useState<{ x: number; engagement: number }[]>([]);
   const [bands, setBands] = useState<
@@ -175,34 +181,49 @@ export const LabPage: React.FC = () => {
     }
   };
 
-  // ——— EEG: tick de envío/lectura (sim o real)
+  // ——— Helper para aplicar respuesta EEG (común a ambos modos)
+  const applyEegResponse = useCallback((resp: EegFeaturesResp) => {
+    const eng = resp.metrics?.engagement ?? 0;
+    setEngSeries((prev) => [...prev, { x: Date.now(), engagement: +eng.toFixed(3) }]);
+
+    const b = Object.entries(resp.per_channel_relative_power || {}).map(([ch, v]) => ({
+      channel: ch,
+      alpha: +(v.alpha ?? 0).toFixed(3),
+      beta: +(v.beta ?? 0).toFixed(3),
+      delta: +(v.delta ?? 0).toFixed(3),
+      theta: +(v.theta ?? 0).toFixed(3),
+      gamma: +(v.gamma ?? 0).toFixed(3),
+    }));
+    setBands(b);
+    setLastMetrics(resp.metrics);
+  }, []);
+
+  // ——— EEG: tick de envío/lectura (sim local o server-bridge)
   const tickOnce = useCallback(async () => {
     try {
-      const channels = simulateChannels(nSamples);
-      const resp = await computeEegFeatures({ sample_rate: sr, channels });
-
-      const eng = resp.metrics?.engagement ?? 0;
-      setEngSeries((prev) => [...prev, { x: Date.now(), engagement: +eng.toFixed(3) }]);
-
-      const b = Object.entries(resp.per_channel_relative_power || {}).map(([ch, v]) => ({
-        channel: ch,
-        alpha: +(v.alpha ?? 0).toFixed(3),
-        beta: +(v.beta ?? 0).toFixed(3),
-        delta: +(v.delta ?? 0).toFixed(3),
-        theta: +(v.theta ?? 0).toFixed(3),
-        gamma: +(v.gamma ?? 0).toFixed(3),
-      }));
-      setBands(b);
-      setLastMetrics(resp.metrics);
+      if (dataSource === "front-sim") {
+        // Simulación en el front → el backend calcula features y además cachea (por session_id)
+        const channels = simulateChannels(nSamples);
+        const resp = await computeEegFeatures({
+          sample_rate: sr,
+          channels,
+          session_id: sessionId, // <- cache en el server con esta sesión
+        });
+        applyEegResponse(resp);
+      } else {
+        // Server-bridge: consumir lo último disponible en el cache del backend
+        const resp = await getLatest(sessionId);
+        applyEegResponse(resp);
+      }
     } catch (e: any) {
       toast({
         variant: "destructive",
-        title: "Error en /eeg/features",
-        description: e?.response?.data?.message || e?.message || "Revisa el backend o tu payload.",
+        title: dataSource === "front-sim" ? "Error en /eeg/features" : "Error en /eeg/latest",
+        description: e?.response?.data?.detail || e?.message || "Revisa el backend o tu payload.",
       });
       if (simOn) setSimOn(false);
     }
-  }, [nSamples, sr, simOn]);
+  }, [dataSource, nSamples, sr, simOn, sessionId, applyEegResponse]);
 
   // ——— Sim loop on/off
   useEffect(() => {
@@ -326,7 +347,7 @@ export const LabPage: React.FC = () => {
 
             <div className="pt-2">
               <Button asChild variant="outline" size="sm">
-                <Link to="/analytics">
+                <Link to="/dashboard">
                   Ver Analytics <ArrowRight className="h-4 w-4 ml-1" />
                 </Link>
               </Button>
@@ -341,11 +362,32 @@ export const LabPage: React.FC = () => {
           <CardTitle className="flex items-center gap-2">
             <Activity className="h-5 w-5" /> EEG — Engagement & Bandas
           </CardTitle>
-          <CardDescription>Usa /eeg/features (simulación local opcional)</CardDescription>
+          <CardDescription>Usa /eeg/features (simulación local o server-bridge)</CardDescription>
         </CardHeader>
         <CardContent className="space-y-6">
           {/* Controles */}
-          <div className="grid md:grid-cols-4 gap-3">
+          <div className="grid md:grid-cols-6 gap-3">
+            <div>
+              <Label className="text-xs text-muted-foreground">Fuente</Label>
+              <select
+                className="w-full rounded-md border bg-background p-2 text-sm"
+                value={dataSource}
+                onChange={(e) => setDataSource(e.target.value as "front-sim" | "server-bridge")}
+              >
+                <option value="front-sim">Front (simulación local)</option>
+                <option value="server-bridge">Server Bridge (cache)</option>
+              </select>
+            </div>
+
+            <div>
+              <Label className="text-xs text-muted-foreground">Session ID</Label>
+              <Input
+                value={sessionId}
+                onChange={(e) => setSessionId(e.target.value)}
+                placeholder="demo1"
+              />
+            </div>
+
             <div>
               <Label className="text-xs text-muted-foreground">Sample rate (Hz)</Label>
               <Input
@@ -354,8 +396,10 @@ export const LabPage: React.FC = () => {
                 max={1024}
                 value={sr}
                 onChange={(e) => setSr(parseInt(e.target.value || "256", 10))}
+                disabled={dataSource === "server-bridge"} // sr no aplica en server-bridge
               />
             </div>
+
             <div>
               <Label className="text-xs text-muted-foreground">N samples</Label>
               <Input
@@ -364,17 +408,23 @@ export const LabPage: React.FC = () => {
                 max={4096}
                 value={nSamples}
                 onChange={(e) => setNSamples(parseInt(e.target.value || "512", 10))}
+                disabled={dataSource === "server-bridge"} // nSamples no aplica en server-bridge
               />
             </div>
+
             <div className="flex items-end gap-2">
-              <Button onClick={() => setSimOn((v) => !v)} className="w-full" variant={simOn ? "destructive" : "default"}>
+              <Button
+                onClick={() => setSimOn((v) => !v)}
+                className="w-full"
+                variant={simOn ? "destructive" : "default"}
+              >
                 {simOn ? (
                   <>
                     <Square className="h-4 w-4 mr-1" /> Detener
                   </>
                 ) : (
                   <>
-                    <Play className="h-4 w-4 mr-1" /> Iniciar sim
+                    <Play className="h-4 w-4 mr-1" /> Iniciar {dataSource === "front-sim" ? "sim" : "lectura"}
                   </>
                 )}
               </Button>
@@ -382,13 +432,49 @@ export const LabPage: React.FC = () => {
                 1 tick
               </Button>
             </div>
+
+            {/* Botón opcional: cargar historial desde el server */}
             <div className="flex items-end">
-              {typeof lastMetrics?.alpha_asymmetry_F4_minus_F3 === "number" && (
-                <div className="w-full rounded-lg border p-3">
-                  <div className="text-xs text-muted-foreground">Alpha Asymmetry (F4 - F3)</div>
-                  <div className="text-lg font-semibold">{lastMetrics.alpha_asymmetry_F4_minus_F3.toFixed(3)}</div>
-                </div>
-              )}
+              <Button
+                variant="outline"
+                className="w-full"
+                onClick={async () => {
+                  try {
+                    const hist = await getHistory(sessionId, 300);
+                    const now = Date.now();
+                    const rebuilt = hist.map((resp, i) => ({
+                      x: now - (hist.length - 1 - i) * 1000, // ~1s entre puntos para visual
+                      engagement: +(resp.metrics?.engagement ?? 0).toFixed(3),
+                    }));
+                    setEngSeries(rebuilt);
+                    // Además, si quieres mostrar bandas del último punto:
+                    const last = hist.at(-1);
+                    if (last) {
+                      const b = Object.entries(last.per_channel_relative_power || {}).map(([ch, v]) => ({
+                        channel: ch,
+                        alpha: +(v.alpha ?? 0).toFixed(3),
+                        beta: +(v.beta ?? 0).toFixed(3),
+                        delta: +(v.delta ?? 0).toFixed(3),
+                        theta: +(v.theta ?? 0).toFixed(3),
+                        gamma: +(v.gamma ?? 0).toFixed(3),
+                      }));
+                      setBands(b);
+                      setLastMetrics(last.metrics);
+                    }
+                    toast({ title: "Historial cargado", description: `${hist.length} ventanas` });
+                  } catch (e: any) {
+                    toast({
+                      variant: "destructive",
+                      title: "Error al cargar historial",
+                      description: e?.response?.data?.detail || e?.message || "Intenta nuevamente.",
+                    });
+                  }
+                }}
+                title="Carga últimos 300 puntos del cache del server"
+              >
+                <HistoryIcon className="h-4 w-4 mr-1" />
+                Cargar historial (300)
+              </Button>
             </div>
           </div>
 
