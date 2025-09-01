@@ -10,7 +10,7 @@ import {
   computeEegFeatures,
   type ClassifyMode,
   type EegFeaturesResp,
-} from "../../../shared/lib/eegService";
+} from "../../../shared/lib/eegservice";
 
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "../../../shared/ui/card";
 import { Button } from "../../../shared/ui/button";
