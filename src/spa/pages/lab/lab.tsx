@@ -18,7 +18,6 @@ import { Input } from "../../../shared/ui/input";
 import { Textarea } from "../../../shared/ui/textarea";
 import { Badge } from "../../../shared/ui/badge";
 import { Label } from "../../../shared/ui/label";
-
 import { toast } from "../../../shared/hooks/use-toast";
 
 import {
@@ -31,6 +30,9 @@ import {
   Play,
   Square,
   ArrowRight,
+  Maximize2,
+  X,
+  ChevronRight,
 } from "lucide-react";
 
 import {
@@ -41,7 +43,6 @@ import {
 // Utils simulación EEG
 // ————————————————————————————————————
 function buildSine(n: number, freq: number, noiseAmp = 0.2) {
-  // seno con ruido
   const arr: number[] = [];
   for (let i = 0; i < n; i++) {
     const t = i / n;
@@ -52,7 +53,6 @@ function buildSine(n: number, freq: number, noiseAmp = 0.2) {
 }
 
 function simulateChannels(nSamples: number) {
-  // Dos canales básicos F3/F4
   return {
     F3: buildSine(nSamples, 8, 0.35),  // ~alpha/θ
     F4: buildSine(nSamples, 14, 0.35), // ~beta baja
@@ -85,6 +85,51 @@ export const LabPage: React.FC = () => {
   const [lastMetrics, setLastMetrics] = useState<EegFeaturesResp["metrics"] | null>(null);
 
   const engagementLine = useMemo(() => engSeries.slice(-120), [engSeries]); // ~120 puntos visibles
+
+  // ——— Focus Stimulus (pantalla completa)
+  const [focusOpen, setFocusOpen] = useState(false);
+
+  const openFocus = () => {
+    if (!news.trim()) {
+      toast({ variant: "destructive", title: "No hay noticia", description: "Genera o pega una noticia primero." });
+      return;
+    }
+    setFocusOpen(true);
+  };
+  const closeFocus = () => setFocusOpen(false);
+
+  const nextStimulus = async () => {
+    try {
+      setGenLoading(true);
+      setCls(null);
+      const data = await generateNews(model);
+      setNews(data.noticia || "");
+    } catch (e: any) {
+      toast({
+        variant: "destructive",
+        title: "Error al generar",
+        description: e?.response?.data?.message || e?.message || "Intenta nuevamente.",
+      });
+    } finally {
+      setGenLoading(false);
+    }
+  };
+
+  // Atajos: ESC cierra, N siguiente estímulo
+  useEffect(() => {
+    const onKey = (e: KeyboardEvent) => {
+      if (!focusOpen) return;
+      if (e.key === "Escape") {
+        e.preventDefault();
+        closeFocus();
+      } else if (e.key.toLowerCase() === "n") {
+        e.preventDefault();
+        nextStimulus();
+      }
+    };
+    window.addEventListener("keydown", onKey);
+    return () => window.removeEventListener("keydown", onKey);
+  }, [focusOpen]);
 
   // ——— NLP: Generar noticia
   const handleGenerate = async () => {
@@ -136,11 +181,9 @@ export const LabPage: React.FC = () => {
       const channels = simulateChannels(nSamples);
       const resp = await computeEegFeatures({ sample_rate: sr, channels });
 
-      // engagement serie
       const eng = resp.metrics?.engagement ?? 0;
       setEngSeries((prev) => [...prev, { x: Date.now(), engagement: +eng.toFixed(3) }]);
 
-      // bandas por canal
       const b = Object.entries(resp.per_channel_relative_power || {}).map(([ch, v]) => ({
         channel: ch,
         alpha: +(v.alpha ?? 0).toFixed(3),
@@ -157,7 +200,6 @@ export const LabPage: React.FC = () => {
         title: "Error en /eeg/features",
         description: e?.response?.data?.message || e?.message || "Revisa el backend o tu payload.",
       });
-      // Si falla, apaga simulación
       if (simOn) setSimOn(false);
     }
   }, [nSamples, sr, simOn]);
@@ -171,7 +213,6 @@ export const LabPage: React.FC = () => {
       }
       return;
     }
-    // primer tick inmediato
     tickOnce();
     simId.current = window.setInterval(tickOnce, 1200);
     return () => {
@@ -186,11 +227,7 @@ export const LabPage: React.FC = () => {
   const labelBadge = (v: "fake" | "real" | null) => {
     if (!v) return null;
     const isFake = v === "fake";
-    return (
-      <Badge className={isFake ? "bg-rose-600" : "bg-emerald-600"}>
-        {isFake ? "FAKE" : "REAL"}
-      </Badge>
-    );
+    return <Badge className={isFake ? "bg-rose-600" : "bg-emerald-600"}>{isFake ? "FAKE" : "REAL"}</Badge>;
   };
 
   const scoreColor = (s: number) => {
@@ -224,16 +261,15 @@ export const LabPage: React.FC = () => {
             <div className="grid md:grid-cols-3 gap-3">
               <div className="md:col-span-2">
                 <Label className="text-xs text-muted-foreground">Modelo</Label>
-                <Input
-                  value={model}
-                  onChange={(e) => setModel(e.target.value)}
-                  placeholder="DeepSeek-R1-0528"
-                />
+                <Input value={model} onChange={(e) => setModel(e.target.value)} placeholder="DeepSeek-R1-0528" />
               </div>
-              <div className="flex items-end">
+              <div className="flex items-end gap-2">
                 <Button onClick={handleGenerate} className="w-full" disabled={genLoading}>
                   <Wand2 className="h-4 w-4 mr-1" />
                   {genLoading ? "Generando..." : "Generar"}
+                </Button>
+                <Button variant="outline" onClick={openFocus} title="Ver estímulo">
+                  <Maximize2 className="h-4 w-4" />
                 </Button>
               </div>
             </div>
@@ -332,23 +368,31 @@ export const LabPage: React.FC = () => {
             </div>
             <div className="flex items-end gap-2">
               <Button onClick={() => setSimOn((v) => !v)} className="w-full" variant={simOn ? "destructive" : "default"}>
-                {simOn ? <><Square className="h-4 w-4 mr-1" /> Detener</> : <><Play className="h-4 w-4 mr-1" /> Iniciar sim</>}
+                {simOn ? (
+                  <>
+                    <Square className="h-4 w-4 mr-1" /> Detener
+                  </>
+                ) : (
+                  <>
+                    <Play className="h-4 w-4 mr-1" /> Iniciar sim
+                  </>
+                )}
               </Button>
-              <Button onClick={tickOnce} variant="outline">1 tick</Button>
+              <Button onClick={tickOnce} variant="outline">
+                1 tick
+              </Button>
             </div>
             <div className="flex items-end">
               {typeof lastMetrics?.alpha_asymmetry_F4_minus_F3 === "number" && (
                 <div className="w-full rounded-lg border p-3">
                   <div className="text-xs text-muted-foreground">Alpha Asymmetry (F4 - F3)</div>
-                  <div className="text-lg font-semibold">
-                    {lastMetrics.alpha_asymmetry_F4_minus_F3.toFixed(3)}
-                  </div>
+                  <div className="text-lg font-semibold">{lastMetrics.alpha_asymmetry_F4_minus_F3.toFixed(3)}</div>
                 </div>
               )}
             </div>
           </div>
 
-          {/* Engagement line */}
+          {/* Engagement line + Bandas */}
           <div className="grid lg:grid-cols-3 gap-6">
             <div className="lg:col-span-2">
               <div className="h-64">
@@ -368,7 +412,6 @@ export const LabPage: React.FC = () => {
               </div>
             </div>
 
-            {/* Bandas por canal */}
             <div className="">
               <div className="h-64">
                 <ResponsiveContainer width="100%" height="100%">
@@ -385,13 +428,73 @@ export const LabPage: React.FC = () => {
                   </BarChart>
                 </ResponsiveContainer>
               </div>
-              <div className="mt-2 text-xs text-muted-foreground">
-                Bandas relativas por canal (stacked)
-              </div>
+              <div className="mt-2 text-xs text-muted-foreground">Bandas relativas por canal (stacked)</div>
             </div>
           </div>
         </CardContent>
       </Card>
+
+      {/* Overlay — Focus Stimulus */}
+      {focusOpen && (
+        <div className="fixed inset-0 z-50 bg-background/95 backdrop-blur supports-[backdrop-filter]:bg-background/70">
+          <div className="absolute inset-0 overflow-auto">
+            <div className="mx-auto max-w-4xl px-6 py-10 md:py-14">
+              <div className="flex items-center justify-between mb-6">
+                <Badge variant="secondary" className="text-xs">ESTÍMULO</Badge>
+                <div className="flex items-center gap-2">
+                  <Button variant="ghost" size="sm" onClick={closeFocus} title="Cerrar (ESC)">
+                    <X className="h-4 w-4" />
+                  </Button>
+                </div>
+              </div>
+
+              <article className="prose prose-invert max-w-none">
+                <h1 className="text-3xl md:text-4xl font-bold leading-tight tracking-tight">
+                  {news ? "Noticia" : "Sin contenido"}
+                </h1>
+                <p className="mt-6 text-lg md:text-2xl leading-relaxed whitespace-pre-wrap">
+                  {news || "Genera una noticia para iniciar el estímulo."}
+                </p>
+              </article>
+
+              <div className="mt-10 flex flex-col sm:flex-row gap-3">
+                <Button
+                  onClick={nextStimulus}
+                  disabled={genLoading}
+                  className="w-full sm:w-auto"
+                  title="N"
+                >
+                  {genLoading ? (
+                    "Generando..."
+                  ) : (
+                    <>
+                      Siguiente estímulo <ChevronRight className="h-4 w-4 ml-1" />
+                    </>
+                  )}
+                </Button>
+
+                <Button variant="outline" onClick={handleClassify} disabled={!news.trim() || clsLoading}>
+                  {clsLoading ? "Clasificando..." : "Clasificar (fake/real)"}
+                </Button>
+
+                <Button variant="ghost" onClick={closeFocus} className="sm:ml-auto">
+                  Cerrar
+                </Button>
+              </div>
+
+              {cls && (
+                <div className="mt-6 flex items-center gap-3">
+                  <span className="text-sm text-muted-foreground">Veredicto:</span>
+                  {labelBadge(cls.label)}
+                  <span className={`text-sm font-medium ${scoreColor(cls.score)}`}>
+                    score: {Math.round(cls.score * 100)}%
+                  </span>
+                </div>
+              )}
+            </div>
+          </div>
+        </div>
+      )}
     </div>
   );
 };
