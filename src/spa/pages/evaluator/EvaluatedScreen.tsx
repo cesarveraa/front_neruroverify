@@ -3,10 +3,11 @@
 
 import React, { useEffect, useMemo, useState } from "react";
 import { useSearchParams } from "react-router-dom";
-import { Button } from "../../shared/ui/button";
-import { Badge } from "../../shared/ui/badge";
+
+import { Badge } from "@/shared/ui/badge";
 import { Maximize2, RefreshCcw } from "lucide-react";
-import { generateNews } from "../../shared/lib/eegservice";
+import { generateNews } from "@/shared/lib/eegservice";
+import { Button } from "@/shared/ui/button";
 
 export default function EvaluatedScreen() {
   const [params] = useSearchParams();

@@ -2,9 +2,11 @@
 "use client";
 
 import React, { useEffect, useState } from "react";
-import { getKPIs, listSessions } from "../../api/eeg";
-import StatCard from "../../components/StatCard";
+
+
 import { EEGLine } from "../../components/Charts";
+import StatCard from "@/spa/components/StarCard";
+import { getKPIs, listSessions } from "@/shared/lib/eeg";
 
 type KPI = {
   avgAlphaSuppression: number;
