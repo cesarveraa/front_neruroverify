@@ -15,6 +15,7 @@ import { NotFoundPage } from "../spa/pages/not-found"
 import { ProtectedRoute } from "../processes/auth-gate/protected-route"
 import { AppLayout } from "../widgets/layout/app-layout"
 import { ErrorBoundary } from "../shared/ui/error-boundary"
+import LabPage from "./pages/lab/lab"
 
 export const routes: RouteObject[] = [
   {
@@ -47,6 +48,7 @@ export const routes: RouteObject[] = [
           { path: "verticals/marketing", element: <MarketingPage /> },
           { path: "verticals/legal", element: <LegalPage /> },
           { path: "verticals/restaurant", element: <RestaurantPage /> },
+          { path: "lab", element: <LabPage /> },
         ],
       },
     ],

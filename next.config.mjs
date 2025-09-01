@@ -1,3 +1,4 @@
+// next.config.js
 /** @type {import('next').NextConfig} */
 const nextConfig = {
   eslint: { ignoreDuringBuilds: true },
@@ -6,14 +7,13 @@ const nextConfig = {
 
   async rewrites() {
     return [
-      {
-        source: "/api/:path*",
-        destination: "https://auth-google-c.vercel.app/:path*",
-      },
+      // ya existente: proxy a tu auth-backend
+      { source: "/api/:path*", destination: "https://auth-google-c.vercel.app/:path*" },
+      // NUEVO: proxy al servidor EEG en Render
+      { source: "/eeg-api/:path*", destination: "https://server-eeg.onrender.com/:path*" },
     ];
   },
 
-  // opcional: ayuda con popups de Firebase si veías warnings de COOP/COEP
   async headers() {
     return [
       {

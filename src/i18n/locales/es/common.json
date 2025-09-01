@@ -3,6 +3,7 @@
     "dashboard": "Panel",
     "profile": "Perfil",
     "datasets": "Data sets",
+    "lab": "Laboratorio",
     "logout": "Cerrar sesión"
   },
   "theme": {

@@ -34,6 +34,12 @@ export const Navbar: React.FC = () => {
               >
                 {t("navigation.datasets")}
               </Link>
+              <Link
+                to="/lab"
+                className="text-sm font-medium text-muted-foreground hover:text-foreground transition-colors"
+              >
+                {t("navigation.lab")}
+              </Link>
             </div>
           </div>
 
